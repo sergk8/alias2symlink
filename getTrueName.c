@@ -36,9 +36,9 @@
 #define MAX_PATH_SIZE 1024
 #define CHECK(rc,check_value) if ((check_value) != noErr) return 0
 
-int getTrueName(char * fileName, UInt8 * targetPath);
+int getTrueName(UInt8 * fileName, UInt8 * targetPath);
 
-int getTrueName(char * fileName, UInt8 * targetPath)
+int getTrueName(UInt8 * fileName, UInt8 * targetPath)
   {
     FSRef               fsRef; 
     Boolean             targetIsFolder; 

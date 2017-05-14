@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS  = -framework Carbon
+CFLAGS  = -framework Carbon -Wno-deprecated-declarations
 
 TARGET = aliasToSymlink
 

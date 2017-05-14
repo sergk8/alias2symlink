@@ -122,6 +122,11 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     printf(" > targetRelativePathUp=%s\n", targetRelativePathUp);
     printf("\n");
     printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePathUp);
+    if( access( symlinkName, F_OK ) != -1 ) {
+            printf(" > symlink `%s` already exists, skipping\n", symlinkName);
+    } else {
+            symlink(targetRelativePathUp, symlinkName);
+    }
 
  }
 void listdir(char *name, int level, char * rootDirName, char * dirPath)

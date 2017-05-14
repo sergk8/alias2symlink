@@ -57,7 +57,6 @@ int main ( int argc, char * argv[] )
     wasAliased = getTrueName(argv[1], targetPath);
 
     if (wasAliased) {
-        printf("wasAliased\n");
         symlink(name1, name2);
     }
 
@@ -88,8 +87,11 @@ void listdir(char *name, int level)
         }
         else {
 	    wasAliased = getTrueName(entry->d_name, targetPath);
-	    if (!wasAliased) targetPath[0] = 0;
-            printf("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath);
+	    if (!wasAliased) {
+		targetPath[0] = 0;
+	    } else {
+		printf("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath);
+	    }
 	}
     } while (entry = readdir(dir));
     closedir(dir);

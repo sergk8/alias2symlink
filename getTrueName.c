@@ -32,8 +32,13 @@
 
 
 #include <Carbon/Carbon.h> 
+#include <dirent.h>
 #define MAX_PATH_SIZE 1024
 #define CHECK(rc,check_value) if ((check_value) != noErr) exit((rc))
+
+
+void listdir(char *name, int level);
+int getTrueName(char * fileName);
 
 int main ( int argc, char * argv[] ) 
   {
@@ -47,6 +52,7 @@ int main ( int argc, char * argv[] )
     realpath(argv[1], resolved_name);
     printf("resolved_name=%s\n", resolved_name);
 
+    listdir(".", 0);
     wasAliased = getTrueName(argv[1]);
 
     if (wasAliased) {
@@ -57,7 +63,31 @@ int main ( int argc, char * argv[] )
     exit(wasAliased);
   }
 
+void listdir(char *name, int level)
+{
+    DIR *dir;
+    struct dirent *entry;
 
+    if (!(dir = opendir(name)))
+        return;
+    if (!(entry = readdir(dir)))
+        return;
+
+    do {
+        if (entry->d_type == DT_DIR) {
+            char path[1024];
+            int len = snprintf(path, sizeof(path)-1, "%s/%s", name, entry->d_name);
+            path[len] = 0;
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || entry->d_name[0] == '.')
+                continue;
+            printf("%*s[%s]\n", level*2, "", entry->d_name);
+            listdir(path, level + 1);
+        }
+        else
+            printf("%*s- %s\n", level*2, "", entry->d_name);
+    } while (entry = readdir(dir));
+    closedir(dir);
+}
 
 int getTrueName(char * fileName)
   {

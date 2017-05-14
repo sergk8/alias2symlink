@@ -74,6 +74,9 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     int rootDirNameLen;
     int targetPathLen;
     
+    char * commonDirPath[MAX_PATH_SIZE];
+    int commonPathLen;
+
     sprintf(symlinkName, "%s.symlink", aliasName);
 
     rootDirNameLen = strlen(rootDirName);
@@ -84,15 +87,40 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     //targetPath + rootDirNameLen + 1 - to skip trailing slash "/"
 
     targetRelativePathUp[0] = 0;
+ 
+    if (targetPathLen > rootDirNameLen) {
+        strncpy(targetRelativePath, targetPath + rootDirNameLen + 1, targetPathLen - rootDirNameLen);
+    } else {
+        for (int i = 0;i < strlen(targetPath);i++) {
+            if (targetPath[i] != rootDirName[i]) {
+                level = level + 1;
+                break;
+            }
+            if (targetPath[i] == '/') {
+                level = level - 1;
+                commonPathLen = i;
+            }
+        }
+        for (int i = 0;i < strlen(rootDirName);i++) {
+            if (rootDirName[i] == '/') {
+                level = level + 1;
+            }
+        }
+
+
+
+        printf(" > commotPathLen=%d\n", commonPathLen);
+        strncpy(targetRelativePath, targetPath + commonPathLen + 1, targetPathLen - commonPathLen);
+
+
+    }
     for (int i = 0;i < level; i++) {
         strcat(targetRelativePathUp, "../");
     }
-
-    strncpy(targetRelativePath, targetPath + rootDirNameLen + 1, targetPathLen - rootDirNameLen);
     strcat(targetRelativePathUp, targetRelativePath);
     printf(" > targetRelativePath=%s\n", targetRelativePath);
     printf(" > targetRelativePathUp=%s\n", targetRelativePathUp);
-    
+    printf("\n");
     printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePathUp);
 
  }

@@ -53,7 +53,7 @@ int main ( int argc, char * argv[] )
     if (argc < 2 ) exit(255);
 
     realpath(argv[1], rootDirName);
-    printf("resolved_name=%s\n", rootDirName);
+    printf("rootDirName=%s\n", rootDirName);
 
     listdir(".", 0, rootDirName, dirPath);
     wasAliased = getTrueName(argv[1], targetPath);
@@ -82,8 +82,8 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     rootDirNameLen = strlen(rootDirName);
     targetPathLen = strlen(targetPath);
 
-    printf(" > rootDirName length=%d\n", rootDirNameLen);
-    printf(" > targetPath length=%d\n", targetPathLen);
+    //printf(" > rootDirName length=%d\n", rootDirNameLen);
+    //printf(" > targetPath length=%d\n", targetPathLen);
     //targetPath + rootDirNameLen + 1 - to skip trailing slash "/"
 
     targetRelativePathUp[0] = 0;
@@ -107,25 +107,23 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
             }
         }
 
-
-
-        printf(" > commotPathLen=%d\n", commonPathLen);
+        //printf(" > commotPathLen=%d\n", commonPathLen);
         strncpy(targetRelativePath, targetPath + commonPathLen + 1, targetPathLen - commonPathLen);
-
 
     }
     for (int i = 0;i < level; i++) {
         strcat(targetRelativePathUp, "../");
     }
     strcat(targetRelativePathUp, targetRelativePath);
-    printf(" > targetRelativePath=%s\n", targetRelativePath);
-    printf(" > targetRelativePathUp=%s\n", targetRelativePathUp);
-    printf("\n");
+    //printf(" > targetRelativePath=%s\n", targetRelativePath);
+    //printf(" > targetRelativePathUp=%s\n", targetRelativePathUp);
+    //printf("\n");
     printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePathUp);
     if( access( symlinkName, F_OK ) != -1 ) {
             printf(" > symlink `%s` already exists, skipping\n", symlinkName);
     } else {
             symlink(targetRelativePathUp, symlinkName);
+            printf(" > SYMLINK CREATED\n");
     }
 
  }
@@ -137,7 +135,7 @@ void listdir(char *name, int level, char * rootDirName, char * dirPath)
     UInt8               targetPath[MAX_PATH_SIZE+1];
     char fileName[MAX_PATH_SIZE];
 
-    printf("dirPath: %s\n", dirPath);
+    //printf("dirPath: %s\n", dirPath);
 
     if (!(dir = opendir(name)))
         return;

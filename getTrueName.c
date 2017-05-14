@@ -57,7 +57,9 @@ int main ( int argc, char * argv[] )
     exit(wasAliased);
   }
 
-  int getTrueName(char * fileName)
+
+
+int getTrueName(char * fileName)
   {
     FSRef               fsRef; 
     Boolean             targetIsFolder; 

@@ -40,8 +40,12 @@ int main ( int argc, char * argv[] )
         int wasAliased;
         char *              name1 = "test-folder";
         char *              name2 = "test-folder.symlink";
+        char                resolved_name[MAX_PATH_SIZE];
     // if there are no arguments, go away
     if (argc < 2 ) exit(255);
+
+    realpath(argv[1], resolved_name);
+    printf("resolved_name=%s\n", resolved_name);
 
     wasAliased = getTrueName(argv[1]);
 

@@ -11,9 +11,6 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
 
 int main ( int argc, char * argv[] ) 
   {
-        int wasAliased;
-        char *              name1 = "test-folder";
-        char *              name2 = "test-folder.symlink";
         char                rootDirName[MAX_PATH_SIZE];
 	UInt8               targetPath[MAX_PATH_SIZE+1];
         char                dirPath[MAX_PATH_SIZE];
@@ -21,7 +18,7 @@ int main ( int argc, char * argv[] )
     if (argc < 2 ) exit(255);
 
     realpath(argv[1], rootDirName);
-    printf("rootDirName=%s\n", rootDirName);
+    printf("rootDirName=%s\n\n", rootDirName);
 
     listdir(".", 0, rootDirName, dirPath);
 

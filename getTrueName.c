@@ -38,7 +38,7 @@
 
 
 void listdir(char *name, int level);
-int getTrueName(char * fileName);
+int getTrueName(char * fileName, UInt8 * targetPath);
 
 int main ( int argc, char * argv[] ) 
   {
@@ -46,6 +46,7 @@ int main ( int argc, char * argv[] )
         char *              name1 = "test-folder";
         char *              name2 = "test-folder.symlink";
         char                resolved_name[MAX_PATH_SIZE];
+	UInt8               targetPath[MAX_PATH_SIZE+1];
     // if there are no arguments, go away
     if (argc < 2 ) exit(255);
 
@@ -53,7 +54,7 @@ int main ( int argc, char * argv[] )
     printf("resolved_name=%s\n", resolved_name);
 
     listdir(".", 0);
-    wasAliased = getTrueName(argv[1]);
+    wasAliased = getTrueName(argv[1], targetPath);
 
     if (wasAliased) {
         printf("wasAliased\n");
@@ -67,6 +68,8 @@ void listdir(char *name, int level)
 {
     DIR *dir;
     struct dirent *entry;
+    int wasAliased;
+    UInt8               targetPath[MAX_PATH_SIZE+1];
 
     if (!(dir = opendir(name)))
         return;
@@ -83,18 +86,20 @@ void listdir(char *name, int level)
             printf("%*s[%s]\n", level*2, "", entry->d_name);
             listdir(path, level + 1);
         }
-        else
-            printf("%*s- %s\n", level*2, "", entry->d_name);
+        else {
+	    wasAliased = getTrueName(entry->d_name, targetPath);
+	    if (!wasAliased) targetPath[0] = 0;
+            printf("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath);
+	}
     } while (entry = readdir(dir));
     closedir(dir);
 }
 
-int getTrueName(char * fileName)
+int getTrueName(char * fileName, UInt8 * targetPath)
   {
     FSRef               fsRef; 
     Boolean             targetIsFolder; 
     Boolean             wasAliased; 
-    UInt8               targetPath[MAX_PATH_SIZE+1]; 
     char *              marker;
 
 
@@ -108,7 +113,7 @@ int getTrueName(char * fileName)
       FSRefMakePath( &fsRef, targetPath, MAX_PATH_SIZE)); 
 
     marker = targetIsFolder ? "/" : "" ;
-    printf( "%s%s\n", targetPath, marker ); 
+    //printf( "%s%s\n", targetPath, marker ); 
 
 
     return wasAliased;

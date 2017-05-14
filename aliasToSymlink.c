@@ -1,4 +1,4 @@
-// getTrueName.c
+// aliasToSymlink.c
 // 
 // DESCRIPTION
 //   Resolve HFS and HFS+ aliased files (and soft links), and return the
@@ -39,6 +39,7 @@
 
 void listdir(char *name, int level);
 int getTrueName(char * fileName, UInt8 * targetPath);
+int createSymlink(char * aliasName, UInt8 * targetPath);
 
 int main ( int argc, char * argv[] ) 
   {
@@ -63,6 +64,11 @@ int main ( int argc, char * argv[] )
     exit(wasAliased);
   }
 
+int createSymlink(char * aliasName, UInt8 * targetPath)
+ {
+    printf("Creating symlink %s.symlink to %s\n", aliasName, targetPath);
+
+ }
 void listdir(char *name, int level)
 {
     DIR *dir;
@@ -91,6 +97,7 @@ void listdir(char *name, int level)
 		targetPath[0] = 0;
 	    } else {
 		printf("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath);
+                createSymlink(entry->d_name, targetPath);
 	    }
 	}
     } while (entry = readdir(dir));

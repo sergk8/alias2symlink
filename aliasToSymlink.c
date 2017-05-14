@@ -34,12 +34,12 @@
 #include <Carbon/Carbon.h> 
 #include <dirent.h>
 #define MAX_PATH_SIZE 1024
-#define CHECK(rc,check_value) if ((check_value) != noErr) exit((rc))
+#define CHECK(rc,check_value) if ((check_value) != noErr) return 0
 
 
-void listdir(char *name, int level, char * rootDirName);
+void listdir(char *name, int level, char * rootDirName, char * dirPath);
 int getTrueName(char * fileName, UInt8 * targetPath);
-int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName);
+int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int level);
 
 int main ( int argc, char * argv[] ) 
   {
@@ -48,13 +48,14 @@ int main ( int argc, char * argv[] )
         char *              name2 = "test-folder.symlink";
         char                rootDirName[MAX_PATH_SIZE];
 	UInt8               targetPath[MAX_PATH_SIZE+1];
+        char *              dirPath[MAX_PATH_SIZE];
     // if there are no arguments, go away
     if (argc < 2 ) exit(255);
 
     realpath(argv[1], rootDirName);
     printf("resolved_name=%s\n", rootDirName);
 
-    listdir(".", 0, rootDirName);
+    listdir(".", 0, rootDirName, dirPath);
     wasAliased = getTrueName(argv[1], targetPath);
 
     if (wasAliased) {
@@ -64,9 +65,10 @@ int main ( int argc, char * argv[] )
     exit(wasAliased);
   }
 
-int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName)
+int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int level)
  {
     char * targetRelativePath[MAX_PATH_SIZE];
+    char * targetRelativePathUp[MAX_PATH_SIZE];
     char * symlinkName[MAX_PATH_SIZE];
     char * buf[MAX_PATH_SIZE];
     int rootDirNameLen;
@@ -80,18 +82,29 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName)
     printf(" > rootDirName length=%d\n", rootDirNameLen);
     printf(" > targetPath length=%d\n", targetPathLen);
     //targetPath + rootDirNameLen + 1 - to skip trailing slash "/"
+
+    targetRelativePathUp[0] = 0;
+    for (int i = 0;i < level; i++) {
+        strcat(targetRelativePathUp, "../");
+    }
+
     strncpy(targetRelativePath, targetPath + rootDirNameLen + 1, targetPathLen - rootDirNameLen);
+    strcat(targetRelativePathUp, targetRelativePath);
     printf(" > targetRelativePath=%s\n", targetRelativePath);
+    printf(" > targetRelativePathUp=%s\n", targetRelativePathUp);
     
-    printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePath);
+    printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePathUp);
 
  }
-void listdir(char *name, int level, char * rootDirName)
+void listdir(char *name, int level, char * rootDirName, char * dirPath)
 {
     DIR *dir;
     struct dirent *entry;
     int wasAliased;
     UInt8               targetPath[MAX_PATH_SIZE+1];
+    char fileName[MAX_PATH_SIZE];
+
+    printf("dirPath: %s\n", dirPath);
 
     if (!(dir = opendir(name)))
         return;
@@ -106,16 +119,21 @@ void listdir(char *name, int level, char * rootDirName)
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || entry->d_name[0] == '.')
                 continue;
             printf("%*s[%s]\n", level*2, "", entry->d_name);
-            listdir(path, level + 1, rootDirName);
+
+            strcat(dirPath, entry->d_name);
+            strcat(dirPath, "/");
+
+            listdir(path, level + 1, rootDirName, dirPath);
         }
         else {
-	    wasAliased = getTrueName(entry->d_name, targetPath);
-            printf("--%s\n", entry->d_name);
+            strcpy(fileName, dirPath);
+            strcat(fileName, entry->d_name);
+	    wasAliased = getTrueName(fileName, targetPath);
 	    if (!wasAliased) {
 		targetPath[0] = 0;
 	    } else {
 		printf("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath);
-                createSymlink(entry->d_name, targetPath, rootDirName);
+                createSymlink(fileName, targetPath, rootDirName, level);
 	    }
 	}
     } while (entry = readdir(dir));
@@ -128,16 +146,20 @@ int getTrueName(char * fileName, UInt8 * targetPath)
     Boolean             targetIsFolder; 
     Boolean             wasAliased; 
     char *              marker;
+    OSErr               returnCode;
 
 
-    CHECK( 255,
-      FSPathMakeRef( fileName, &fsRef, NULL ));
+    //printf("[%s\n", fileName);
+    //returnCode =
+    CHECK(255, FSPathMakeRef( fileName, &fsRef, NULL ));
+    //printf("]%d\n", returnCode);
 
-    CHECK( 1,
-      FSResolveAliasFile( &fsRef, TRUE, &targetIsFolder, &wasAliased));
 
-    CHECK( 255,
-      FSRefMakePath( &fsRef, targetPath, MAX_PATH_SIZE)); 
+    //returnCode =
+    CHECK(1, FSResolveAliasFile( &fsRef, TRUE, &targetIsFolder, &wasAliased));
+    //printf("]%d\n", returnCode);
+
+    CHECK( 255, FSRefMakePath( &fsRef, targetPath, MAX_PATH_SIZE));
 
     marker = targetIsFolder ? "/" : "" ;
     //printf( "%s%s\n", targetPath, marker ); 

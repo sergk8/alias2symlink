@@ -42,6 +42,8 @@ int main ( int argc, char * argv[] )
     Boolean             wasAliased; 
     UInt8               targetPath[MAX_PATH_SIZE+1]; 
     char *              marker;
+    char *              name1 = "test-folder";
+    char *              name2 = "test-folder.symlink";
 
     // if there are no arguments, go away
     if (argc < 2 ) exit(255); 
@@ -60,6 +62,8 @@ int main ( int argc, char * argv[] )
         printf("wasAliased\n");
     }
     printf( "%s%s\n", targetPath, marker ); 
+
+    symlink(name1, name2);
 
     exit( 1 - wasAliased );
   }

@@ -36,20 +36,34 @@
 #define CHECK(rc,check_value) if ((check_value) != noErr) exit((rc))
 
 int main ( int argc, char * argv[] ) 
-  { 
+  {
+        int wasAliased;
+        char *              name1 = "test-folder";
+        char *              name2 = "test-folder.symlink";
+    // if there are no arguments, go away
+    if (argc < 2 ) exit(255);
+
+    wasAliased = getTrueName(argv[1]);
+
+    if (wasAliased) {
+        printf("wasAliased\n");
+        symlink(name1, name2);
+    }
+
+    exit(wasAliased);
+  }
+
+  int getTrueName(char * fileName)
+  {
     FSRef               fsRef; 
     Boolean             targetIsFolder; 
     Boolean             wasAliased; 
     UInt8               targetPath[MAX_PATH_SIZE+1]; 
     char *              marker;
-    char *              name1 = "test-folder";
-    char *              name2 = "test-folder.symlink";
 
-    // if there are no arguments, go away
-    if (argc < 2 ) exit(255); 
 
     CHECK( 255,
-      FSPathMakeRef( argv[1], &fsRef, NULL ));
+      FSPathMakeRef( fileName, &fsRef, NULL ));
 
     CHECK( 1,
       FSResolveAliasFile( &fsRef, TRUE, &targetIsFolder, &wasAliased));
@@ -58,12 +72,8 @@ int main ( int argc, char * argv[] )
       FSRefMakePath( &fsRef, targetPath, MAX_PATH_SIZE)); 
 
     marker = targetIsFolder ? "/" : "" ;
-    if (wasAliased) {
-        printf("wasAliased\n");
-    }
     printf( "%s%s\n", targetPath, marker ); 
 
-    symlink(name1, name2);
 
-    exit( 1 - wasAliased );
+    return wasAliased;
   }

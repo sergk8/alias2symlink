@@ -56,6 +56,9 @@ int main ( int argc, char * argv[] )
       FSRefMakePath( &fsRef, targetPath, MAX_PATH_SIZE)); 
 
     marker = targetIsFolder ? "/" : "" ;
+    if (wasAliased) {
+        printf("wasAliased\n");
+    }
     printf( "%s%s\n", targetPath, marker ); 
 
     exit( 1 - wasAliased );

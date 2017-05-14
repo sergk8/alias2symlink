@@ -32,7 +32,6 @@
 
 
 #include <Carbon/Carbon.h> 
-#include <dirent.h>
 #define MAX_PATH_SIZE 1024
 #define CHECK(rc,check_value) if ((check_value) != noErr) return 0
 

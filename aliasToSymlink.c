@@ -37,24 +37,24 @@
 #define CHECK(rc,check_value) if ((check_value) != noErr) exit((rc))
 
 
-void listdir(char *name, int level);
+void listdir(char *name, int level, char * rootDirName);
 int getTrueName(char * fileName, UInt8 * targetPath);
-int createSymlink(char * aliasName, UInt8 * targetPath);
+int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName);
 
 int main ( int argc, char * argv[] ) 
   {
         int wasAliased;
         char *              name1 = "test-folder";
         char *              name2 = "test-folder.symlink";
-        char                resolved_name[MAX_PATH_SIZE];
+        char                rootDirName[MAX_PATH_SIZE];
 	UInt8               targetPath[MAX_PATH_SIZE+1];
     // if there are no arguments, go away
     if (argc < 2 ) exit(255);
 
-    realpath(argv[1], resolved_name);
-    printf("resolved_name=%s\n", resolved_name);
+    realpath(argv[1], rootDirName);
+    printf("resolved_name=%s\n", rootDirName);
 
-    listdir(".", 0);
+    listdir(".", 0, rootDirName);
     wasAliased = getTrueName(argv[1], targetPath);
 
     if (wasAliased) {
@@ -64,12 +64,29 @@ int main ( int argc, char * argv[] )
     exit(wasAliased);
   }
 
-int createSymlink(char * aliasName, UInt8 * targetPath)
+int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName)
  {
-    printf("Creating symlink %s.symlink to %s\n", aliasName, targetPath);
+    char * targetRelativePath[MAX_PATH_SIZE];
+    char * symlinkName[MAX_PATH_SIZE];
+    char * buf[MAX_PATH_SIZE];
+    int rootDirNameLen;
+    int targetPathLen;
+    
+    sprintf(symlinkName, "%s.symlink", aliasName);
+
+    rootDirNameLen = strlen(rootDirName);
+    targetPathLen = strlen(targetPath);
+
+    printf(" > rootDirName length=%d\n", rootDirNameLen);
+    printf(" > targetPath length=%d\n", targetPathLen);
+    //targetPath + rootDirNameLen + 1 - to skip trailing slash "/"
+    strncpy(targetRelativePath, targetPath + rootDirNameLen + 1, targetPathLen - rootDirNameLen);
+    printf(" > targetRelativePath=%s\n", targetRelativePath);
+    
+    printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePath);
 
  }
-void listdir(char *name, int level)
+void listdir(char *name, int level, char * rootDirName)
 {
     DIR *dir;
     struct dirent *entry;
@@ -89,15 +106,16 @@ void listdir(char *name, int level)
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || entry->d_name[0] == '.')
                 continue;
             printf("%*s[%s]\n", level*2, "", entry->d_name);
-            listdir(path, level + 1);
+            listdir(path, level + 1, rootDirName);
         }
         else {
 	    wasAliased = getTrueName(entry->d_name, targetPath);
+            printf("--%s\n", entry->d_name);
 	    if (!wasAliased) {
 		targetPath[0] = 0;
 	    } else {
 		printf("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath);
-                createSymlink(entry->d_name, targetPath);
+                createSymlink(entry->d_name, targetPath, rootDirName);
 	    }
 	}
     } while (entry = readdir(dir));

@@ -39,6 +39,8 @@ Workflow:
 #include <getopt.h>
 #define MAX_PATH_SIZE 1024
 
+#define VERBOSE_PRINTF(a) if (opt_verbose_flag) {printf("[verbose] "); printf a;}
+
 
 void listdir(char *name, int level, char * rootDirName, char * dirPath);
 int getTrueName(UInt8 *fileName, UInt8 * targetPath);
@@ -107,31 +109,31 @@ int main ( int argc, char * argv[] )
 
     }
     if (opt_verbose_flag)
-        printf("--verbose flag set\n");
+        VERBOSE_PRINTF(("--verbose flag set\n"));
 
     if (opt_recursive_flag)
-        printf("--recursive flag set\n");
+        VERBOSE_PRINTF(("--recursive flag set\n"));
 
     if (opt_delete_flag)
-        printf("--delete flag set\n");
+       VERBOSE_PRINTF(("--delete flag set\n"));
 
     if (opt_check_only_flag)
-        printf("--check-only flag set\n");
+        VERBOSE_PRINTF(("--check-only flag set\n"));
 
-    printf("--name=%s\n", opt_symlink_name_flag);
+    VERBOSE_PRINTF(("--name=%s\n", opt_symlink_name_flag));
 
     if (argc <= optind ) {
         printf("Please specify folder: ./aliasToSymlink --verboase -[rcd] [-n \"\"] [FOLDER]\n");
         exit(255);
     } else {
         opt_work_folder = argv[optind];
-        printf("opt_work_folder = %s\n", opt_work_folder);
+        VERBOSE_PRINTF(("opt_work_folder=%s\n\n", opt_work_folder));
     }
 
     exit(0);
 
     realpath(opt_work_folder, rootDirName);
-    printf("rootDirName=%s\n\n", rootDirName);
+    VERBOSE_PRINTF(("rootDirName=%s\n\n", rootDirName));
 
     listdir(".", 0, rootDirName, dirPath);
 

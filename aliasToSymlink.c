@@ -12,7 +12,7 @@ Add opts:
 
  -d, --delete-alias Delete alias after symlink was succesfully created              DONE
  
- -n, --name         Symlink name. %s stands for alias old name.
+ -n, --name         Symlink name. %s stands for alias old name.                     DONE
  "%s.symlink"       Syntax of `sprintf` is used.
                     If symlink name is equal "%s" and `-d` flag is not set, 
                     error will be shown.
@@ -123,6 +123,12 @@ int main ( int argc, char * argv[] )
 
     VERBOSE_PRINTF(("--name=%s\n", opt_symlink_name));
 
+    if (strcmp(opt_symlink_name, "%s") == 0  && !opt_delete_flag) {
+        printf("Cannot rename symlink to alias not deleting alias\n");
+        printf("Please specify `-d` flag or change `-n`\n");
+        exit(-1);
+    }
+
     if (opt_check_only_file) {
 	wasAliased = getTrueName((UInt8 *)opt_check_only_file, targetPath);
         if (wasAliased) {
@@ -152,6 +158,7 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     char targetRelativePath[MAX_PATH_SIZE];
     char targetRelativePathUp[MAX_PATH_SIZE];
     char symlinkName[MAX_PATH_SIZE];
+    char newSymlinkName[MAX_PATH_SIZE];
     char buf[MAX_PATH_SIZE];
     int rootDirNameLen;
     int targetPathLen;
@@ -208,13 +215,20 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
             printf("\n");
             return 0;
     } else {
-            //symlink(targetRelativePathUp, symlinkName);
+            symlink(targetRelativePathUp, symlinkName);
             printf("SYMLINK CREATED\n");
 
-            if(opt_delete_flag) {
+            if (opt_delete_flag) {
                 VERBOSE_PRINTF(("deleting alias\n"));
                 remove(aliasName);
                 printf("%s: Deleted alias\n", aliasName);
+            }
+
+            if (strcmp(opt_symlink_name, "%s.symlink") != 0) {
+                sprintf(newSymlinkName, opt_symlink_name, aliasName);
+                VERBOSE_PRINTF(("renaming symlink to %s\n", newSymlinkName));
+                rename(symlinkName, newSymlinkName);
+                printf("%s: renamed symlink\n", newSymlinkName);
             }
 
             printf("\n");

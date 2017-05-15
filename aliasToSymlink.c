@@ -3,23 +3,32 @@
 
 Add opts:
 
- --check-only   -   Perform check if file is an alias. 
+-c, --check-only    Perform check if file is an alias. 
                     Print alias target and return 1 if true. 
                     If false return 0 do not print anything.
 
- -r             -   Recursively check for aliases in subfolders.
+ -r, --recursive    Recursively check for aliases in subfolders.
                     Not active by default.
 
- -d             -   Delete alias after symlink was created
+ -d, --delete-alias Delete alias after symlink was created
  
  -
 
- -n "%s.symlink" -  Symlink name. %s stands for alias old name.
-                    Syntax of `sprintf` is used.
-                    If 
+ -n, --name         Symlink name. %s stands for alias old name.
+ "%s.symlink"       Syntax of `sprintf` is used.
+                    If symlink name is equal "%s" and `-d` flag is not set, 
+                    error will be shown.
+                    
 
+Workflow:
+ - get alias target
+ - convert absolute path to relative path
+ - create symlink
+ - delete symlink (-d)
+ - rename symlink (-n)
 
 */
+
 #include <Carbon/Carbon.h> 
 #include <dirent.h>
 #define MAX_PATH_SIZE 1024

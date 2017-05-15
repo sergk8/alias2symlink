@@ -3,23 +3,21 @@
 
 Add opts:
 
- -c, --check-only   Perform check if file is an alias. 
+ -c, --check-only   Perform check if file is an alias.                              DONE 
                     Print alias target and return 1 if true. 
                     If false return 0 do not print anything.
 
- -r, --recursive    Recursively check for aliases in subfolders.
+ -r, --recursive    Recursively check for aliases in subfolders.                    DONE
                     Not active by default.
 
  -d, --delete-alias Delete alias after symlink was created
  
- -
-
  -n, --name         Symlink name. %s stands for alias old name.
  "%s.symlink"       Syntax of `sprintf` is used.
                     If symlink name is equal "%s" and `-d` flag is not set, 
                     error will be shown.
                     
- --verbose          Print all output
+ --verbose          Print all output                                                DONE
  --brief            Print only important output, default behaviour
 
 
@@ -29,7 +27,7 @@ Workflow:
  - get alias target
  - convert absolute path to relative path
  - create symlink
- - delete symlink (-d)
+ - delete alias (-d)
  - rename symlink (-n)
 
 */
@@ -50,8 +48,8 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
 static int          opt_verbose_flag;
 static int          opt_recursive_flag;
 static int          opt_delete_flag;
-static int          opt_check_only_flag;;
-static char         opt_symlink_name_flag[256] = "%s.symlink";
+static char         opt_symlink_name[256] = "%s.symlink";
+static char*        opt_check_only_file;
 static char*        opt_work_folder;
 
 int main ( int argc, char * argv[] ) 
@@ -59,14 +57,16 @@ int main ( int argc, char * argv[] )
         char                rootDirName[MAX_PATH_SIZE];
 	UInt8               targetPath[MAX_PATH_SIZE+1];
         char                dirPath[MAX_PATH_SIZE];
-    // if there are no arguments, go away
+        int                 wasAliased;
+
+
     static struct option long_options[] =
     {
         {"verbose",     no_argument,    &opt_verbose_flag,  1},
         {"brief",       no_argument,    &opt_verbose_flag,  0},
         {"recursive",   no_argument,    0,      'r'},
         {"delete",      no_argument,    0,      'd'},
-        {"check-only",  no_argument,    0,      'c'},
+        {"check-only",  required_argument,    0,      'c'},
         {"name",        required_argument,    0,      'n'},
         {0, 0, 0, 0}
 
@@ -77,7 +77,7 @@ int main ( int argc, char * argv[] )
     while(1)
     {
         int option_index = 0;
-        c = getopt_long(argc, argv, "rdcn:", long_options, &option_index);
+        c = getopt_long(argc, argv, "rdc:n:", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -96,11 +96,11 @@ int main ( int argc, char * argv[] )
                 break;
 
             case 'c':
-                opt_check_only_flag = 1;
+                opt_check_only_file = optarg;
                 break;
 
             case 'n':
-                strcpy(opt_symlink_name_flag, optarg);
+                strcpy(opt_symlink_name, optarg);
                 break;
 
             default:
@@ -108,6 +108,7 @@ int main ( int argc, char * argv[] )
         }
 
     }
+
     if (opt_verbose_flag)
         VERBOSE_PRINTF(("--verbose flag set\n"));
 
@@ -117,12 +118,20 @@ int main ( int argc, char * argv[] )
     if (opt_delete_flag)
        VERBOSE_PRINTF(("--delete flag set\n"));
 
-    if (opt_check_only_flag)
+    if (opt_check_only_file)
         VERBOSE_PRINTF(("--check-only flag set\n"));
 
-    VERBOSE_PRINTF(("--name=%s\n", opt_symlink_name_flag));
+    VERBOSE_PRINTF(("--name=%s\n", opt_symlink_name));
 
-    if (argc <= optind ) {
+    if (opt_check_only_file) {
+	wasAliased = getTrueName((UInt8 *)opt_check_only_file, targetPath);
+        if (wasAliased) {
+            printf("%s\n", targetPath);
+        }
+        exit(wasAliased);
+    }
+
+    if (argc <= optind) {
         printf("Please specify folder: ./aliasToSymlink --verboase -[rcd] [-n \"\"] [FOLDER]\n");
         exit(255);
     } else {

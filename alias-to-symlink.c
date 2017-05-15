@@ -74,7 +74,7 @@ int main ( int argc, char * argv[] )
 
     int c;
 
-    while(1)
+    while (1)
     {
         int option_index = 0;
         c = getopt_long(argc, argv, "rdc:n:", long_options, &option_index);
@@ -210,7 +210,7 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     VERBOSE_PRINTF(("\n"));
 
     printf("%s:\tCreating symlink to %s\n", symlinkName, targetRelativePathUp);
-    if( access( symlinkName, F_OK ) != -1 ) {
+    if (access(symlinkName, F_OK) != -1) {
             printf("symlink `%s` already exists, skipping\n", symlinkName);
             printf("\n");
             return 0;

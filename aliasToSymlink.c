@@ -21,6 +21,8 @@ Add opts:
                     
 
 Workflow:
+ - if (-c) us set, getTrueName of the file and exit
+ - check all files in current folder, include subfolders if (-r) set
  - get alias target
  - convert absolute path to relative path
  - create symlink

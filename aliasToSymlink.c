@@ -3,7 +3,7 @@
 
 Add opts:
 
--c, --check-only    Perform check if file is an alias. 
+ -c, --check-only   Perform check if file is an alias. 
                     Print alias target and return 1 if true. 
                     If false return 0 do not print anything.
 
@@ -19,6 +19,9 @@ Add opts:
                     If symlink name is equal "%s" and `-d` flag is not set, 
                     error will be shown.
                     
+ --verbose          Print all output
+ --brief            Print only important output, default behaviour
+
 
 Workflow:
  - if (-c) us set, getTrueName of the file and exit
@@ -33,6 +36,7 @@ Workflow:
 
 #include <Carbon/Carbon.h> 
 #include <dirent.h>
+#include <getopt.h>
 #define MAX_PATH_SIZE 1024
 
 
@@ -40,12 +44,83 @@ void listdir(char *name, int level, char * rootDirName, char * dirPath);
 int getTrueName(UInt8 *fileName, UInt8 * targetPath);
 int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int level);
 
+//flags
+static int          opt_verbose_flag;
+static int          opt_recursive_flag;
+static int          opt_delete_flag;
+static int          opt_check_only_flag;;
+static char         opt_symlink_name_flag[256] = "%s.symlink";
+
 int main ( int argc, char * argv[] ) 
   {
         char                rootDirName[MAX_PATH_SIZE];
 	UInt8               targetPath[MAX_PATH_SIZE+1];
         char                dirPath[MAX_PATH_SIZE];
     // if there are no arguments, go away
+    static struct option long_options[] =
+    {
+        {"verbose",     no_argument,    &opt_verbose_flag,  1},
+        {"brief",       no_argument,    &opt_verbose_flag,  0},
+        {"recursive",   no_argument,    0,      'r'},
+        {"delete",      no_argument,    0,      'd'},
+        {"check-only",  no_argument,    0,      'c'},
+        {"name",        required_argument,    0,      'n'},
+        {0, 0, 0, 0}
+
+    };
+
+    int c;
+
+    while(1)
+    {
+        int option_index = 0;
+        c = getopt_long(argc, argv, "rdcn:", long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 0:
+                break;
+
+            case 'r':
+                opt_recursive_flag = 1;
+                break;
+
+            case 'd':
+                opt_delete_flag = 1;
+                break;
+
+            case 'c':
+                opt_check_only_flag = 1;
+                break;
+
+            case 'n':
+                strcpy(opt_symlink_name_flag, optarg);
+                break;
+
+            default:
+                abort();
+        }
+
+    }
+    if (opt_verbose_flag)
+        printf("--verbose flag set\n");
+
+    if (opt_recursive_flag)
+        printf("--recursive flag set\n");
+
+    if (opt_delete_flag)
+        printf("--delete flag set\n");
+
+    if (opt_check_only_flag)
+        printf("--check-only flag set\n");
+
+    printf("--name=%s\n", opt_symlink_name_flag);
+
+    exit(0);
+
     if (argc < 2 ) exit(255);
 
     realpath(argv[1], rootDirName);

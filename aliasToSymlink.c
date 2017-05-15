@@ -1,5 +1,25 @@
 // aliasToSymlink.c
+/*
 
+Add opts:
+
+ --check-only   -   Perform check if file is an alias. 
+                    Print alias target and return 1 if true. 
+                    If false return 0 do not print anything.
+
+ -r             -   Recursively check for aliases in subfolders.
+                    Not active by default.
+
+ -d             -   Delete alias after symlink was created
+ 
+ -
+
+ -n "%s.symlink" -  Symlink name. %s stands for alias old name.
+                    Syntax of `sprintf` is used.
+                    If 
+
+
+*/
 #include <Carbon/Carbon.h> 
 #include <dirent.h>
 #define MAX_PATH_SIZE 1024

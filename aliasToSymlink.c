@@ -39,7 +39,7 @@ Workflow:
 #include <getopt.h>
 #define MAX_PATH_SIZE 1024
 
-#define VERBOSE_PRINTF(a) if (opt_verbose_flag) {printf("[verbose] "); printf a;}
+#define VERBOSE_PRINTF(a) if (opt_verbose_flag) {printf("<verbose> "); printf a;}
 
 
 void listdir(char *name, int level, char * rootDirName, char * dirPath);
@@ -130,12 +130,10 @@ int main ( int argc, char * argv[] )
         VERBOSE_PRINTF(("opt_work_folder=%s\n\n", opt_work_folder));
     }
 
-    exit(0);
-
     realpath(opt_work_folder, rootDirName);
     VERBOSE_PRINTF(("rootDirName=%s\n\n", rootDirName));
 
-    listdir(".", 0, rootDirName, dirPath);
+    listdir(opt_work_folder, 0, rootDirName, dirPath);
 
     exit(0);
   }
@@ -157,8 +155,8 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     rootDirNameLen = strlen(rootDirName);
     targetPathLen = strlen((const char *)targetPath);
 
-    VERBOSE_PRINTF((" > rootDirName length=%d\n", rootDirNameLen));
-    VERBOSE_PRINTF((" > targetPath length=%d\n", targetPathLen));
+    VERBOSE_PRINTF(("rootDirName length=%d\n", rootDirNameLen));
+    VERBOSE_PRINTF(("targetPath length=%d\n", targetPathLen));
     //targetPath + rootDirNameLen + 1 - to skip trailing slash "/"
 
     targetRelativePathUp[0] = 0;
@@ -182,7 +180,7 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
             }
         }
 
-        VERBOSE_PRINTF((" > commotPathLen=%d\n", commonPathLen));
+        VERBOSE_PRINTF(("commotPathLen=%d\n", commonPathLen));
         strncpy(targetRelativePath, (const char *)targetPath + commonPathLen + 1, targetPathLen - commonPathLen);
 
     }
@@ -191,18 +189,21 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     }
     strcat(targetRelativePathUp, targetRelativePath);
 
-    VERBOSE_PRINTF((" > targetRelativePath=%s\n", targetRelativePath));
-    VERBOSE_PRINTF((" > targetRelativePathUp=%s\n", targetRelativePathUp));
+    VERBOSE_PRINTF(("targetRelativePath=%s\n", targetRelativePath));
+    VERBOSE_PRINTF(("targetRelativePathUp=%s\n", targetRelativePathUp));
     VERBOSE_PRINTF(("\n"));
 
-    printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePathUp);
+    printf("%s:\tCreating symlink to %s\n", symlinkName, targetRelativePathUp);
     if( access( symlinkName, F_OK ) != -1 ) {
-            printf(" > symlink `%s` already exists, skipping\n", symlinkName);
+            printf("symlink `%s` already exists, skipping\n", symlinkName);
+            printf("\n");
             return 0;
     } else {
-            symlink(targetRelativePathUp, symlinkName);
-            printf(" > SYMLINK CREATED\n");
+            //symlink(targetRelativePathUp, symlinkName);
+            printf("SYMLINK CREATED\n");
+            printf("\n");
     }
+
 
     return 1;
 
@@ -229,7 +230,7 @@ void listdir(char *name, int level, char * rootDirName, char * dirPath)
             path[len] = 0;
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || entry->d_name[0] == '.')
                 continue;
-            printf("%*s[%s]\n", level*2, "", entry->d_name);
+            //printf("%*s[%s]\n", level*2, "", entry->d_name);
 
             strcat(dirPath, entry->d_name);
             strcat(dirPath, "/");
@@ -243,7 +244,7 @@ void listdir(char *name, int level, char * rootDirName, char * dirPath)
 	    if (!wasAliased) {
 		targetPath[0] = 0;
 	    } else {
-		printf("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath);
+		VERBOSE_PRINTF(("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath));
                 createSymlink(fileName, targetPath, rootDirName, level);
 	    }
 	}

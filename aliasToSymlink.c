@@ -224,7 +224,7 @@ void listdir(char *name, int level, char * rootDirName, char * dirPath)
         return;
 
     do {
-        if (entry->d_type == DT_DIR) {
+        if (entry->d_type == DT_DIR && opt_recursive_flag) {
             char path[1024];
             int len = snprintf(path, sizeof(path)-1, "%s/%s", name, entry->d_name);
             path[len] = 0;

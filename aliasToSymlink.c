@@ -157,8 +157,8 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     rootDirNameLen = strlen(rootDirName);
     targetPathLen = strlen((const char *)targetPath);
 
-    //printf(" > rootDirName length=%d\n", rootDirNameLen);
-    //printf(" > targetPath length=%d\n", targetPathLen);
+    VERBOSE_PRINTF((" > rootDirName length=%d\n", rootDirNameLen));
+    VERBOSE_PRINTF((" > targetPath length=%d\n", targetPathLen));
     //targetPath + rootDirNameLen + 1 - to skip trailing slash "/"
 
     targetRelativePathUp[0] = 0;
@@ -182,7 +182,7 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
             }
         }
 
-        //printf(" > commotPathLen=%d\n", commonPathLen);
+        VERBOSE_PRINTF((" > commotPathLen=%d\n", commonPathLen));
         strncpy(targetRelativePath, (const char *)targetPath + commonPathLen + 1, targetPathLen - commonPathLen);
 
     }
@@ -190,9 +190,11 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
         strcat(targetRelativePathUp, "../");
     }
     strcat(targetRelativePathUp, targetRelativePath);
-    //printf(" > targetRelativePath=%s\n", targetRelativePath);
-    //printf(" > targetRelativePathUp=%s\n", targetRelativePathUp);
-    //printf("\n");
+
+    VERBOSE_PRINTF((" > targetRelativePath=%s\n", targetRelativePath));
+    VERBOSE_PRINTF((" > targetRelativePathUp=%s\n", targetRelativePathUp));
+    VERBOSE_PRINTF(("\n"));
+
     printf(" > Creating symlink %s to %s\n", symlinkName, targetRelativePathUp);
     if( access( symlinkName, F_OK ) != -1 ) {
             printf(" > symlink `%s` already exists, skipping\n", symlinkName);

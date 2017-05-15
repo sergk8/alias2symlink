@@ -10,7 +10,7 @@ Add opts:
  -r, --recursive    Recursively check for aliases in subfolders.                    DONE
                     Not active by default.
 
- -d, --delete-alias Delete alias after symlink was created
+ -d, --delete-alias Delete alias after symlink was succesfully created              DONE
  
  -n, --name         Symlink name. %s stands for alias old name.
  "%s.symlink"       Syntax of `sprintf` is used.
@@ -210,6 +210,13 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
     } else {
             //symlink(targetRelativePathUp, symlinkName);
             printf("SYMLINK CREATED\n");
+
+            if(opt_delete_flag) {
+                VERBOSE_PRINTF(("deleting alias\n"));
+                remove(aliasName);
+                printf("%s: Deleted alias\n", aliasName);
+            }
+
             printf("\n");
     }
 

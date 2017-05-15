@@ -50,6 +50,7 @@ static int          opt_recursive_flag;
 static int          opt_delete_flag;
 static int          opt_check_only_flag;;
 static char         opt_symlink_name_flag[256] = "%s.symlink";
+static char*        opt_work_folder;
 
 int main ( int argc, char * argv[] ) 
   {
@@ -119,11 +120,17 @@ int main ( int argc, char * argv[] )
 
     printf("--name=%s\n", opt_symlink_name_flag);
 
+    if (argc <= optind ) {
+        printf("Please specify folder: ./aliasToSymlink --verboase -[rcd] [-n \"\"] [FOLDER]\n");
+        exit(255);
+    } else {
+        opt_work_folder = argv[optind];
+        printf("opt_work_folder = %s\n", opt_work_folder);
+    }
+
     exit(0);
 
-    if (argc < 2 ) exit(255);
-
-    realpath(argv[1], rootDirName);
+    realpath(opt_work_folder, rootDirName);
     printf("rootDirName=%s\n\n", rootDirName);
 
     listdir(".", 0, rootDirName, dirPath);

@@ -20,11 +20,16 @@ Add opts:
  --verbose          Print all output                                                DONE
  --brief            Print only important output, default behaviour
 
- -s, --show	    Show - lists all aliases in current folder
+ -x, --print-all    Prints all aliases and symlinks in current folder
 		    Do not create symlinks
 
- -a, --show-all	    Shows all aliases and symlinks in current folder
+ -p, --print	    Print - lists all aliases in current folder			    DONE
 		    Do not create symlinks
+
+ -s, --create-symlink	Creates symlink with relative path from given alias.
+  alias
+  symlink
+
 
 Workflow:
  - if (-c) us set, getTrueName of the file and exit
@@ -51,7 +56,7 @@ int createSymlink(char * aliasName, UInt8 * targetPath, char * rootDirName, int 
 
 //flags
 static int          opt_verbose_flag;
-static int          opt_show_flag;
+static int          opt_print_flag;
 static int          opt_recursive_flag;
 static int          opt_delete_flag;
 static char         opt_symlink_name[256] = "%s.symlink";
@@ -72,7 +77,7 @@ int main ( int argc, char * argv[] )
         {"brief",       no_argument,    &opt_verbose_flag,  0},
         {"recursive",   no_argument,    0,      'r'},
         {"delete",      no_argument,    0,      'd'},
-        {"show",        no_argument,    0,      's'},
+        {"print",       no_argument,    0,      'p'},
         {"check-only",  required_argument,    0,      'c'},
         {"name",        required_argument,    0,      'n'},
         {0, 0, 0, 0}
@@ -84,7 +89,7 @@ int main ( int argc, char * argv[] )
     while (1)
     {
         int option_index = 0;
-        c = getopt_long(argc, argv, "rdsc:n:", long_options, &option_index);
+        c = getopt_long(argc, argv, "rdpc:n:", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -110,8 +115,8 @@ int main ( int argc, char * argv[] )
                 strcpy(opt_symlink_name, optarg);
                 break;
 
-            case 's':
-		opt_show_flag = 1;
+            case 'p':
+		opt_print_flag = 1;
                 break;
 
             default:
@@ -132,8 +137,8 @@ int main ( int argc, char * argv[] )
     if (opt_check_only_file)
         VERBOSE_PRINTF(("--check-only flag set\n"));
 
-    if (opt_show_flag)
-        VERBOSE_PRINTF(("--show flag set\n"));
+    if (opt_print_flag)
+        VERBOSE_PRINTF(("--print flag set\n"));
 
     VERBOSE_PRINTF(("--name=%s\n", opt_symlink_name));
 
@@ -268,6 +273,7 @@ void listdir(char *name, int level, char * rootDirName, char * dirPath)
         return;
 
     do {
+	//FIXME: 
         if (entry->d_type == DT_DIR && opt_recursive_flag) {
             char path[1024];
             int len = snprintf(path, sizeof(path)-1, "%s/%s", name, entry->d_name);
@@ -289,10 +295,10 @@ void listdir(char *name, int level, char * rootDirName, char * dirPath)
 		targetPath[0] = 0;
 	    } else {
 		VERBOSE_PRINTF(("%*s- %s alias=%s | %s\n", level*2, "", entry->d_name, wasAliased==1 ? "true" : "false", targetPath));
-		if (!opt_show_flag) {
+		if (!opt_print_flag) {
 		    createSymlink(fileName, targetPath, rootDirName, level);
 		} else {
-		    printf("%s/%s\n", rootDirName, fileName);
+		    printf("alias: %s/%s => %s\n", rootDirName, fileName, targetPath);
 		}
 	    }
 	}

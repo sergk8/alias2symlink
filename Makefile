@@ -2,7 +2,7 @@ CC = gcc
 
 CFLAGS  = -framework Carbon -Wno-deprecated-declarations
 
-TARGET = alias-to-symlink
+TARGET = alias2symlink
 
 all: $(TARGET)
 
